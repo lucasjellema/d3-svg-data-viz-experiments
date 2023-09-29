@@ -194,13 +194,13 @@
 
           const updatedBarData = [
             /*        { series: "transport", value: 1 },
-      { series: "windenergy", value: 22 },
-      { series: "nuclear", value: 5 },
-      { series: "biomass", value: 5 },
-      { series: "waterenergy", value: 8 },
-      { series: "newtech", value: 8 },
-      { series: "wonderstuff", value: 3 }
-  */
+          { series: "windenergy", value: 22 },
+          { series: "nuclear", value: 5 },
+          { series: "biomass", value: 5 },
+          { series: "waterenergy", value: 8 },
+          { series: "newtech", value: 8 },
+          { series: "wonderstuff", value: 3 }
+      */
           ];
           for (const areaValue of valuesAtX) {
             updatedBarData.push({
@@ -224,12 +224,29 @@
 
       svg.append('g').attr('class', 'y-axis').call(yAxis);
 
+      // Add x-axis and y-axis titles to the area chart
+      svg
+        .append('text')
+        .attr('class', 'x-axis-title')
+        .attr('x', margin.left + 100)
+        .attr('y', height + 35) // Adjusted y position
+        .style('text-anchor', 'middle')
+        .text('Total Emissions Reductions (Mt CO2)');
+
+      svg
+        .append('g')
+        .attr('transform', 'translate(' + -25 + ', ' + 530 + ')')
+        .append('text')
+        .attr('text-anchor', 'start')
+        .attr('transform', 'rotate(-90)')
+        .text('Capacity (GW) / Total System Cost (Billion $)');
+
       // Create the vertical line
       const verticalLine = svg
         .append('line')
         .attr('class', 'vertical-line')
-        .attr('x1', 110)
-        .attr('x2', 110)
+        .attr('x1', 410)
+        .attr('x2', 410)
         .attr('y1', 0)
         .attr('y2', height);
 
