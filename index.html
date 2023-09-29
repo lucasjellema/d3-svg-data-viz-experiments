@@ -4,20 +4,7 @@
     <meta charset="UTF-8" />
     <title>Stacked Area Chart with Numeric X-Axis using D3.js</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <style>
-      /* Style the line */
-      .vertical-line {
-        stroke: steelblue;
-        stroke-width: 2;
-        stroke-dasharray: 5, 5; /* Add dashed line style */
-      }
-
-      /* Style the lines */
-      .line {
-        stroke-width: 2;
-        stroke-dasharray: 5, 5; /* Add dashed line style */
-      }
-    </style>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <!-- Create a container for the chart -->
@@ -114,10 +101,11 @@
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
       // Add an event listener to the chart for mousemove
-      d3.select('#chart').on('mousemove', function (event) {
-        const [x, y] = d3.pointer(event);
-        updateLines(x, y);
-      });
+      // d3.select('#chart').on('mousemove', function (event) {
+      //   const [x, y] = d3.pointer(event);
+      //   updateLines(x, y);
+      // });
+
       // Create a color scale for the series
       const color = d3
         .scaleOrdinal()
@@ -248,18 +236,84 @@
         .attr('x1', 410)
         .attr('x2', 410)
         .attr('y1', 0)
-        .attr('y2', height);
+        .attr('y2', height + 40);
+
+      // vertical line Marker
+      const verticalLineMarker = svg
+        .append('rect')
+        .attr('class', 'marker')
+        .attr('x', 400)
+        .attr('y', height + 20)
+        .attr('width', 20)
+        .attr('height', 20);
+
+      // Drag behavior vertical line marker
+      const drag = d3.drag().on('drag', function () {
+        var coordinates = d3.pointer(event);
+        var x = coordinates[0] - 40;
+        var y = coordinates[1];
+
+        x = Math.max(0, Math.min(width - 20, x)); // Limit the marker within the SVG
+        d3.select(this).attr('x', x); // Move marker
+        verticalLine.attr('x1', x + 10).attr('x2', x + 10); // Move line
+
+        // find current x coordinate and synchronize bar chart
+        const xCoordToFind = xValueFromMouse(x); // Replace with the desired x-coordinate - translate mouse x to value on x-axis
+        const valuesAtX = findValuesAtX(xCoordToFind, data);
+
+        // TODO only if the values have changed should we proceed (to prevent unnecessary repaints)
+        const updatedBarData = [];
+        let sum = 0;
+        for (const areaValue of valuesAtX) {
+          updatedBarData.push({
+            series: areaValue.series,
+            value: areaValue.value,
+          });
+          sum = sum + areaValue.value;
+        }
+
+        const newY = yScale(sum);
+
+        // update horizontal line and marker
+        horizontalLine.attr('y1', newY).attr('y2', newY); // Move line
+        horizontalLineMarker.attr('y', newY - 10); // Move marker
+
+        repaintBar(updatedBarData);
+      });
+
+      verticalLineMarker.call(drag);
 
       // Create the horizontal line
       const horizontalLine = svg
         .append('line')
         .attr('class', 'vertical-line')
-        .attr('x1', 0)
+        .attr('x1', -20)
         .attr('x2', width)
         .attr('y1', 100)
         .attr('y2', 100);
 
-      // Create a function to update the lines' positions based on mouse movement
+      // vertical line Marker
+      const horizontalLineMarker = svg
+        .append('rect')
+        .attr('class', 'marker')
+        .attr('x', -30)
+        .attr('y', 90)
+        .attr('width', 20)
+        .attr('height', 20);
+
+      // Drag behavior horizontal line marker
+      const dragHorizontalLine = d3.drag().on('drag', function () {
+        var coordinates = d3.pointer(event);
+        var x = coordinates[0] - 40;
+        var y = coordinates[1];
+
+        x = Math.max(0, Math.min(width - 20, x)); // Limit the marker within the SVG
+        d3.select(this).attr('y', y); // Move marker
+        horizontalLine.attr('y1', y + 10).attr('y2', y + 10); // Move line
+      });
+
+      horizontalLineMarker.call(dragHorizontalLine);
+
       function updateLines(x, y) {
         verticalLine.attr('x1', x).attr('x2', x);
         horizontalLine.attr('y1', y).attr('y2', y);
